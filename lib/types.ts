@@ -37,6 +37,7 @@ export interface FlightOption {
   layovers?: Layover[];
   aircraftType?: string;
   bookingSource: "airline" | "ota";
+  deepLink?: string;
 }
 
 export type SearchRunStatus = "pending" | "running" | "completed" | "failed";
@@ -51,4 +52,3 @@ export interface SearchRun {
   completedAt?: string;
   errorMessage?: string;
 }
-

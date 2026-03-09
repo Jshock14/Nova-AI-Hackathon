@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProgressTracker } from "@/components/progress-tracker";
 import { Icon } from "@/components/ui/icon";
 import { useRedirectState } from "@/app/providers/redirect-provider";
-import { createSearchRun } from "@/lib/api";
+import { createSearchRun, getSearchRun } from "@/lib/api";
+import type { SearchRun } from "@/lib/types";
 
 const TOTAL_STEPS = 4;
+const POLL_MS = 2500;
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default function RunPage() {
   const router = useRouter();
@@ -19,6 +25,8 @@ export default function RunPage() {
     setSearchRun,
   } = useRedirectState();
   const [currentStep, setCurrentStep] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const createRunPromiseRef = useRef<Promise<SearchRun> | null>(null);
 
   useEffect(() => {
     if (!tripDetails) {
@@ -32,33 +40,51 @@ export default function RunPage() {
     let cancelled = false;
 
     const runSearch = async () => {
-      const run = await createSearchRun(tripDetails, preferences);
-      if (cancelled) return;
-      setSearchRun(run);
-      setFlightOptions(run.options);
-      setSelectedOption(run.options[0] ?? null);
+      try {
+        setErrorMessage(null);
+        if (!createRunPromiseRef.current) {
+          createRunPromiseRef.current = createSearchRun(tripDetails, preferences);
+        }
+        const run = await createRunPromiseRef.current;
+        if (cancelled) return;
+
+        setSearchRun(run);
+        setCurrentStep(1);
+
+        while (!cancelled) {
+          await delay(POLL_MS);
+          const latestRun = await getSearchRun(run.id);
+          if (!latestRun) {
+            setErrorMessage("This search session expired. Please start a new search.");
+            return;
+          }
+
+          setSearchRun(latestRun);
+          setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS - 1));
+
+          if (latestRun.status === "completed") {
+            setFlightOptions(latestRun.options);
+            setSelectedOption(latestRun.options[0] ?? null);
+            router.replace("/results");
+            return;
+          }
+
+          if (latestRun.status === "failed") {
+            setErrorMessage(latestRun.errorMessage ?? "Search failed. Please try again.");
+            return;
+          }
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Search run failed", error);
+        setErrorMessage("Unable to run search right now. Please try again.");
+      }
     };
 
-    runSearch().catch((error) => {
-      console.error("Mock search failed", error);
-    });
-
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev >= TOTAL_STEPS - 1) {
-          clearInterval(interval);
-          setTimeout(() => {
-            if (!cancelled) router.replace("/results");
-          }, 600);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 900);
+    runSearch();
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, [
     tripDetails,
@@ -84,9 +110,24 @@ export default function RunPage() {
         <ProgressTracker currentStepIndex={currentStep} />
 
         <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-            This could take a few moments. Hang tight!
-          </p>
+          {errorMessage ? (
+            <div className="space-y-4">
+              <p className="text-sm text-red-600 dark:text-red-400 leading-relaxed">
+                {errorMessage}
+              </p>
+              <button
+                type="button"
+                onClick={() => router.replace("/")}
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                Back to search
+              </button>
+            </div>
+          ) : (
+            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+              This could take a few moments. Hang tight!
+            </p>
+          )}
         </div>
       </div>
     </main>

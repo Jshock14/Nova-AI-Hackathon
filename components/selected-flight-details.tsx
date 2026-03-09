@@ -106,10 +106,17 @@ export function SelectedFlightDetails() {
         )}
       </div>
 
-      <Button type="button" className="w-full">
-        Continue to booking
-      </Button>
+      {selectedOption.deepLink ? (
+        <Button type="button" className="w-full" asChild>
+          <a href={selectedOption.deepLink} target="_blank" rel="noopener noreferrer">
+            Continue to booking
+          </a>
+        </Button>
+      ) : (
+        <Button type="button" className="w-full" disabled>
+          Booking link unavailable
+        </Button>
+      )}
     </div>
   );
 }
-

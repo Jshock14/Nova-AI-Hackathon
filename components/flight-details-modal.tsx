@@ -103,10 +103,19 @@ export function FlightDetailsModal({
         </div>
 
         <div className="mt-4 flex justify-end">
-          <Button type="button">Continue booking</Button>
+          {flight.deepLink ? (
+            <Button type="button" asChild>
+              <a href={flight.deepLink} target="_blank" rel="noopener noreferrer">
+                Continue booking
+              </a>
+            </Button>
+          ) : (
+            <Button type="button" disabled>
+              Booking link unavailable
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-

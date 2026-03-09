@@ -43,6 +43,8 @@ export function ResultFlightCard({ option, index }: ResultFlightCardProps) {
     maximumFractionDigits: 0,
   });
   const isFirst = index === 0;
+  const arrivesNextDay =
+    arrive.toDateString() !== depart.toDateString() && arrive.getTime() > depart.getTime();
 
   return (
     <div
@@ -60,11 +62,21 @@ export function ResultFlightCard({ option, index }: ResultFlightCardProps) {
         </div>
       )}
       <div className="p-6">
+        <div className="mb-4">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            {option.airline}
+            {option.airlineCode ? ` • ${option.airlineCode}` : ""}
+          </p>
+        </div>
         <div className="flex flex-col md:flex-row md:items-center gap-6">
           <div className="flex items-center gap-4 md:gap-6 flex-wrap">
             <div className="flex items-center gap-2">
               <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                {depart.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false })}
+                {depart.toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
               </p>
               <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 {option.departureAirport}
@@ -81,10 +93,15 @@ export function ResultFlightCard({ option, index }: ResultFlightCardProps) {
             )}
             <div className="flex items-center gap-2">
               <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                {arrive.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false })}
+                {arrive.toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
               </p>
               <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 {option.arrivalAirport}
+                {arrivesNextDay ? " +1" : ""}
               </span>
             </div>
           </div>

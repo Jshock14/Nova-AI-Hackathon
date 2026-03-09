@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nova AI Hackathon Project
 
-## Getting Started
+Flight disruption recovery MVP built with Next.js + a Python Nova Act search service.
 
-First, run the development server:
+## MVP Promise
+
+Enter origin/destination + constraints, run flight search automation, return top options, and continue booking.
+
+## Architecture
+
+1. Next.js app (this repo root)
+- UI flow: `/` -> `/run` -> `/results` -> `/results/[id]`
+- API routes:
+  - `POST /api/search-runs`
+  - `GET /api/search-runs/:id`
+- Polls run status and renders ranked options.
+
+2. Python Nova Act service (`services/nova_act_service`)
+- Endpoint: `POST /search`
+- Executes Nova Act browser automation.
+- Returns normalized `FlightOption[]` payload used by the Next.js app.
+
+## Prerequisites
+
+- Node.js 20+
+- Python 3.10+
+- Nova Act API key
+
+## Setup
+
+### 1) Start the Python service
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd "/Users/jasonschacher/AWS Cloud Club/Nova-AI-Hackathon/services/nova_act_service"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `services/nova_act_service/.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+NOVA_ACT_API_KEY=your_key_here
+# optional tuning:
+# NOVA_ACT_STARTING_PAGE=https://www.google.com/travel/flights
+# NOVA_ACT_MAX_STEPS=80
+# NOVA_ACT_TIMEOUT_SECONDS=420
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run service:
 
-## Learn More
+```bash
+set -a && source .env && set +a
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2) Start the Next.js app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In project root create `.env.local`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+NOVA_ACT_SEARCH_ENDPOINT=http://localhost:8000/search
+```
 
-## Deploy on Vercel
+Run app:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cd "/Users/jasonschacher/AWS Cloud Club/Nova-AI-Hackathon"
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000).
+
+## Quick Verification
+
+1. Python health:
+
+```bash
+curl -s http://localhost:8000/health
+```
+
+2. Python search:
+
+```bash
+curl -i -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"trip":{"origin":"SFO","destination":"JFK","date":"2026-03-20","passengers":1},"preferences":{"priorityMode":"balanced","maxStops":1}}'
+```
+
+3. App flow:
+- submit search on `/`
+- wait on `/run`
+- confirm redirect to `/results`
+
+## Notes
+
+- `deepLink` may be `null` when the source site does not expose a direct booking link in visible results.
+- Search run state is currently in-memory for MVP development.

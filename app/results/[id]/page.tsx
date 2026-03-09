@@ -99,12 +99,24 @@ export default function FlightDetailsPage() {
               Fare Breakdown
             </h4>
             <PriceBreakdown priceCents={flight.priceCents} />
-            <button
-              type="button"
-              className="w-full bg-primary text-white font-bold py-4 rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-4"
-            >
-              Confirm &amp; Book Now
-            </button>
+            {flight.deepLink ? (
+              <a
+                href={flight.deepLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-primary text-white font-bold py-4 rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-4"
+              >
+                Confirm &amp; Book Now
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="w-full bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-4 cursor-not-allowed"
+              >
+                Booking Link Unavailable
+              </button>
+            )}
             <Link
               href="/results"
               className="w-full text-center text-slate-500 hover:text-primary font-medium text-sm transition-colors py-3 block"

@@ -41,6 +41,7 @@ export function generateMockFlightOptions(
       ],
       aircraftType: "Airbus A321neo",
       bookingSource: "ota",
+      deepLink: "https://www.example-ota.com/booking/opt-1",
     },
     {
       id: "opt-2",
@@ -57,6 +58,7 @@ export function generateMockFlightOptions(
       layovers: [],
       aircraftType: "Boeing 787-9",
       bookingSource: "airline",
+      deepLink: "https://www.example-airline.com/booking/opt-2",
     },
     {
       id: "opt-3",
@@ -78,6 +80,7 @@ export function generateMockFlightOptions(
       ],
       aircraftType: "Airbus A320",
       bookingSource: "airline",
+      deepLink: "https://www.example-airline.com/booking/opt-3",
     },
   ];
 
@@ -124,4 +127,3 @@ export function generateMockFlightOptions(
 
   return sorted.slice(0, 5);
 }
-
