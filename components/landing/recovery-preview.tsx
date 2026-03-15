@@ -2,51 +2,58 @@ import { Icon } from "@/components/ui/icon";
 
 export function RecoveryPreview() {
   return (
-    <section className="w-full bg-slate-100 dark:bg-slate-900/50 py-16 px-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <div className="order-2 md:order-1">
-          <div className="aspect-video bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden relative border border-slate-200 dark:border-slate-700">
-            <div className="absolute top-4 left-4 flex gap-2">
-              <div className="size-3 rounded-full bg-red-400" />
-              <div className="size-3 rounded-full bg-amber-400" />
-              <div className="size-3 rounded-full bg-green-400" />
+    <section className="w-full bg-slate-100 px-6 py-16">
+      <div className="mx-auto grid w-full max-w-[1152px] grid-cols-1 items-center gap-12 md:grid-cols-2">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1)]">
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex gap-2">
+              <span className="size-3 rounded-full bg-red-400" />
+              <span className="size-3 rounded-full bg-amber-400" />
+              <span className="size-3 rounded-full bg-green-400" />
             </div>
-            <div className="relative p-6 h-full flex flex-col pt-14">
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600 flex items-center justify-between mb-4">
+            <span className="rounded bg-slate-200 px-3 py-1 text-[10px] font-bold">LIVE UPDATES</span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+              <div className="flex items-center gap-4">
+                <span className="inline-flex size-10 items-center justify-center rounded bg-primary/10 text-primary text-sm">UA</span>
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">NYC &gt; SFO</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">1:30 PM</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-red-600 dark:text-red-400 font-bold text-sm">DELAYED</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">10 hrs</p>
+                  <p className="text-sm font-bold text-slate-900">UA 2402 • Direct</p>
+                  <p className="text-xs text-slate-500">Departure: 14:30</p>
                 </div>
               </div>
+              <span className="text-base font-bold text-green-600">$420</span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-4 opacity-70 shadow-sm">
+              <div className="flex items-center gap-4">
+                <span className="inline-flex size-10 items-center justify-center rounded bg-primary/10 text-primary text-sm">DL</span>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">DL 1184 • 1 Stop</p>
+                  <p className="text-xs text-slate-500">Departure: 15:15</p>
+                </div>
+              </div>
+              <span className="text-base font-bold text-slate-700">$385</span>
             </div>
           </div>
         </div>
-        <div className="order-1 md:order-2 text-left">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-slate-900 dark:text-white">
-            Real-time recovery monitoring
-          </h2>
-          <ul className="space-y-4">
-            <li className="flex items-center gap-3">
-              <Icon name="check_circle" className="text-green-500 shrink-0" />
-              <span className="font-medium text-slate-900 dark:text-slate-100">
-                Automatically scan for flight changes
-              </span>
+
+        <div>
+          <h2 className="text-4xl font-bold tracking-[-0.02em] text-slate-900">Real-time recovery monitoring</h2>
+          <p className="mt-4 text-lg leading-7 text-slate-600">
+            Our system constantly monitors global flight traffic. As soon as a flight is delayed or
+            canceled, we automatically prioritize seats on the next available connections.
+          </p>
+          <ul className="mt-6 space-y-4">
+            <li className="flex items-center gap-3 text-slate-900">
+              <Icon name="check_circle" className="text-green-500" /> Direct airline booking access
             </li>
-            <li className="flex items-center gap-3">
-              <Icon name="check_circle" className="text-green-500 shrink-0" />
-              <span className="font-medium text-slate-900 dark:text-slate-100">
-                Instant notifications
-              </span>
+            <li className="flex items-center gap-3 text-slate-900">
+              <Icon name="check_circle" className="text-green-500" /> Priority support desk
             </li>
-            <li className="flex items-center gap-3">
-              <Icon name="check_circle" className="text-green-500 shrink-0" />
-              <span className="font-medium text-slate-900 dark:text-slate-100">
-                Access to dedicated support
-              </span>
+            <li className="flex items-center gap-3 text-slate-900">
+              <Icon name="check_circle" className="text-green-500" /> Automated re-ticketing within minutes
             </li>
           </ul>
         </div>

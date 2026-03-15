@@ -4,19 +4,23 @@ import { RecoveryPreview } from "@/components/landing/recovery-preview";
 
 export default function Home() {
   return (
-    <main className="flex-1 flex flex-col items-center">
-      <section className="w-full max-w-[1200px] px-6 py-12 md:py-20 text-center flex flex-col items-center">
-        <h1 className="text-slate-800 dark:text-white text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-6 max-w-3xl">
-          Flight delayed or canceled? We&apos;ll find your best alternative in seconds.
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl max-w-2xl mb-12">
-          Don&apos;t let a bad airline ruin your plans. We search thousands of alternatives to find
-          you the next best route home.
-        </p>
+    <main className="flex flex-1 flex-col items-center">
+      <section className="w-full px-6 pb-12 pt-16 text-center md:pt-20">
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center">
+          <span className="mb-4 rounded-full bg-primary/10 px-4 py-1 text-xs font-bold uppercase tracking-[0.1em] text-primary">
+            Instant Recovery Tool
+          </span>
+          <h1 className="max-w-[768px] text-[44px] font-black leading-[1.05] tracking-[-0.03em] text-[#0f172a] md:text-[60px]">
+            Flight delayed or canceled? <span className="text-[#6f829f]">We&apos;ll find your best alternative in seconds.</span>
+          </h1>
+          <p className="mb-12 mt-6 max-w-[672px] text-xl leading-8 text-slate-500">
+            Get back on track without the stress. We search thousands of routes to find you the
+            fastest way home.
+          </p>
 
-        <LandingSearchCard />
-
-        <TrustIndicators />
+          <LandingSearchCard />
+          <TrustIndicators />
+        </div>
       </section>
 
       <RecoveryPreview />

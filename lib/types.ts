@@ -7,10 +7,13 @@ export interface TripDetails {
   passengers: number;
 }
 
+export type CabinClass = "any" | "economy" | "premium-economy" | "business" | "first";
+
 export interface SearchPreferences {
   maxPrice?: number;
   airlinePreference?: string;
   maxStops?: 0 | 1 | 2;
+  cabinClass?: CabinClass;
   priorityMode: PriorityMode;
 }
 

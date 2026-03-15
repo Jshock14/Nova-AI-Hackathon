@@ -95,6 +95,14 @@ export function generateMockFlightOptions(
     }
   }
 
+  if (preferences.airlinePreference?.trim()) {
+    const preferred = preferences.airlinePreference.trim().toLowerCase();
+    const matched = filtered.filter((opt) => opt.airline.toLowerCase().includes(preferred));
+    if (matched.length > 0) {
+      filtered = matched;
+    }
+  }
+
   if (preferences.maxStops === 0) {
     const nonstop = filtered.filter((opt) => opt.stops === 0);
     if (nonstop.length > 0) filtered = nonstop;
@@ -112,17 +120,31 @@ export function generateMockFlightOptions(
 
   const sorted = [...filtered].sort((a, b) => sortKey(a) - sortKey(b));
 
-  // Reassign primary badge to first option based on priority.
   if (sorted.length > 0) {
-    const primaryBadge: RankingBadgeType =
-      preferences.priorityMode === "time"
-        ? "fastest-arrival"
-        : preferences.priorityMode === "cost"
-          ? "best-price"
-          : "balanced-choice";
-    sorted[0].badges = Array.from(
-      new Set<RankingBadgeType>([primaryBadge, ...sorted[0].badges]),
-    );
+    const cheapest = [...sorted].sort((a, b) => a.priceCents - b.priceCents)[0];
+    const fastestArrival = [...sorted].sort(
+      (a, b) => new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime(),
+    )[0];
+    const balanced = [...sorted].sort(
+      (a, b) =>
+        a.durationMinutes + a.priceCents / 10 - (b.durationMinutes + b.priceCents / 10),
+    )[0];
+
+    for (const option of sorted) {
+      let badge: RankingBadgeType;
+      if (option.id === cheapest.id) {
+        badge = "best-price";
+      } else if (option.id === fastestArrival.id) {
+        badge = "fastest-arrival";
+      } else if (option.id === balanced.id) {
+        badge = "balanced-choice";
+      } else if (option.stops > 0) {
+        badge = "alternative-hub";
+      } else {
+        badge = "balanced-choice";
+      }
+      option.badges = [badge];
+    }
   }
 
   return sorted.slice(0, 5);

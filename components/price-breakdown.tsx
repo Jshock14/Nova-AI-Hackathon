@@ -3,30 +3,41 @@ interface PriceBreakdownProps {
 }
 
 export function PriceBreakdown({ priceCents }: PriceBreakdownProps) {
-  const alternativeTravel = Math.round(priceCents * 0.75);
-  const taxes = Math.round(priceCents * 0.15);
-  const redirectFee = priceCents - alternativeTravel - taxes;
+  const baseFare = Math.round(priceCents * 0.876);
+  const taxes = priceCents - baseFare;
 
   return (
-    <div className="flex flex-col gap-3 mb-6">
-      <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-        <span>Alternative Travel</span>
-        <span>${(alternativeTravel / 100).toFixed(2)}</span>
+    <div className="space-y-3 text-base">
+      <Row label="Base Fare (1 Adult)" value={`$${(baseFare / 100).toFixed(2)}`} />
+      <Row label="Taxes and Fees" value={`$${(taxes / 100).toFixed(2)}`} />
+      <Row label="Redirect Service Fee" value="Waived" valueClass="font-semibold text-green-600" />
+
+      <div className="mt-5 border-t border-slate-100 pt-5">
+        <div className="flex items-end justify-between">
+          <p className="text-2xl font-bold text-slate-900">Total Price</p>
+          <div className="text-right">
+            <p className="text-4xl font-black tracking-[-0.02em] text-primary">${(priceCents / 100).toFixed(2)}</p>
+            <p className="text-[10px] text-slate-400">All prices in USD</p>
+          </div>
+        </div>
       </div>
-      <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-        <span>Tax &amp; Fees</span>
-        <span>${(taxes / 100).toFixed(2)}</span>
-      </div>
-      <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-        <span>Redirect Fee</span>
-        <span>${(redirectFee / 100).toFixed(2)}</span>
-      </div>
-      <div className="border-t border-slate-200 dark:border-slate-700 my-3 pt-4 flex justify-between items-end">
-        <span className="text-slate-900 dark:text-slate-100 font-bold">Total</span>
-        <p className="text-2xl font-bold text-primary leading-none">
-          ${(priceCents / 100).toFixed(2)}
-        </p>
-      </div>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between text-slate-600">
+      <span>{label}</span>
+      <span className={valueClass}>{value}</span>
     </div>
   );
 }

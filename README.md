@@ -20,6 +20,25 @@ Enter origin/destination + constraints, run flight search automation, return top
 - Executes Nova Act browser automation.
 - Returns normalized `FlightOption[]` payload used by the Next.js app.
 
+## Search Contract (Current)
+
+Primary trip fields:
+- `origin` (string)
+- `destination` (string)
+- `date` (yyyy-mm-dd)
+- `passengers` (1-9)
+
+Advanced preferences:
+- `maxPrice?` (number, USD)
+- `airlinePreference?` (string)
+- `priorityMode` (`time | cost | balanced`, default `balanced`)
+- `maxStops?` (`0 | 1 | 2`, unset means default behavior)
+- `cabinClass?` (`any | economy | premium-economy | business | first`, default `any`)
+
+Notes:
+- API route sanitizes preferences and forwards only the supported keys.
+- Unsupported/empty advanced values are normalized to defaults or omitted.
+
 ## Prerequisites
 
 - Node.js 20+

@@ -2,35 +2,37 @@ import { Icon } from "@/components/ui/icon";
 
 const items = [
   {
-    icon: "check_circle",
-    iconBg: "bg-green-100 dark:bg-green-900/30 text-green-600",
-    title: "Real-time updates.",
+    icon: "schedule",
+    title: "Time Saved",
+    subtitle: "Faster recovery routing",
+    iconBg: "bg-green-100 text-green-600",
   },
   {
-    icon: "calendar_today",
-    iconBg: "bg-blue-100 dark:bg-blue-900/30 text-blue-600",
-    title: "24/7 Support.",
+    icon: "sentiment_satisfied",
+    title: "Less Stress",
+    subtitle: "Smart ranked alternatives",
+    iconBg: "bg-sky-100 text-sky-600",
   },
   {
     icon: "flight",
-    iconBg: "bg-purple-100 dark:bg-purple-900/30 text-purple-600",
-    title: "Exclusive deals.",
+    title: "Direct Booking",
+    subtitle: "Complete purchase on airline sites",
+    iconBg: "bg-purple-100 text-purple-600",
   },
 ];
 
 export function TrustIndicators() {
   return (
-    <div className="mt-16 flex flex-wrap justify-center gap-12 text-slate-500 dark:text-slate-400">
+    <div className="mt-10 grid w-full max-w-[900px] grid-cols-1 gap-6 sm:grid-cols-3">
       {items.map((item) => (
-        <div key={item.title} className="flex flex-col items-center gap-3 text-center">
-          <div
-            className={`size-14 rounded-full flex items-center justify-center ${item.iconBg}`}
-          >
-            <Icon name={item.icon} size={28} />
+        <div key={item.title} className="flex items-center gap-3 text-left">
+          <span className={`flex size-10 items-center justify-center rounded-full ${item.iconBg}`}>
+            <Icon name={item.icon} size={18} />
+          </span>
+          <div>
+            <p className="text-base font-bold text-slate-900">{item.title}</p>
+            <p className="text-sm text-slate-500">{item.subtitle}</p>
           </div>
-          <p className="text-slate-800 dark:text-white font-medium leading-none">
-            {item.title}
-          </p>
         </div>
       ))}
     </div>

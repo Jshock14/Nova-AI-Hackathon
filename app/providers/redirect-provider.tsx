@@ -20,7 +20,7 @@ const RedirectContext = createContext<RedirectState | undefined>(undefined);
 
 const defaultPreferences: SearchPreferences = {
   priorityMode: "balanced",
-  maxStops: 1,
+  cabinClass: "any",
 };
 
 export function RedirectProvider({ children }: { children: ReactNode }) {
@@ -57,4 +57,3 @@ export function useRedirectState() {
   }
   return ctx;
 }
-

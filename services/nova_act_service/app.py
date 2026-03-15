@@ -24,7 +24,8 @@ class TripDetails(BaseModel):
 class SearchPreferences(BaseModel):
     maxPrice: int | None = None
     airlinePreference: str | None = None
-    maxStops: int | None = Field(default=1, ge=0, le=2)
+    maxStops: int | None = Field(default=None, ge=0, le=2)
+    cabinClass: Literal["any", "economy", "premium-economy", "business", "first"] = "any"
     priorityMode: Literal["time", "cost", "balanced"] = "balanced"
 
 
@@ -136,14 +137,24 @@ def score_option(option: FlightOption, priority_mode: str) -> float:
 def apply_badges(options: list[FlightOption], priority_mode: str) -> list[FlightOption]:
     if not options:
         return options
-    primary = (
-        "fastest-arrival"
-        if priority_mode == "time"
-        else "best-price"
-        if priority_mode == "cost"
-        else "balanced-choice"
-    )
-    options[0].badges = list(dict.fromkeys([primary, *options[0].badges]))
+
+    cheapest = min(options, key=lambda o: o.priceCents)
+    earliest = min(options, key=lambda o: o.arrivalTime)
+    balanced = min(options, key=lambda o: score_option(o, "balanced"))
+
+    for option in options:
+        if option.id == cheapest.id:
+            option.badges = ["best-price"]
+        elif option.id == earliest.id:
+            option.badges = ["fastest-arrival"]
+        elif option.id == balanced.id:
+            option.badges = ["balanced-choice"]
+        elif option.stops > 0:
+            option.badges = ["alternative-hub"]
+        else:
+            # Keep one deterministic category even for edge cases.
+            option.badges = ["balanced-choice"]
+
     return options
 
 
@@ -172,6 +183,8 @@ def build_prompt(trip: TripDetails, prefs: SearchPreferences) -> str:
         constraints.append(f"max total price in USD: {prefs.maxPrice}")
     if prefs.airlinePreference:
         constraints.append(f"prefer airline: {prefs.airlinePreference}")
+    if prefs.cabinClass != "any":
+        constraints.append(f"cabin class: {prefs.cabinClass}")
 
     constraints_text = ", ".join(constraints)
     return (
@@ -201,14 +214,39 @@ def run_nova_search(trip: TripDetails, prefs: SearchPreferences) -> list[FlightO
     timeout_seconds = int(os.getenv("NOVA_ACT_TIMEOUT_SECONDS", "420"))
     prompt = build_prompt(trip, prefs)
 
+    prompt_retry = (
+        prompt
+        + " IMPORTANT: Output must be a JSON object with top-level key "
+        + "\"flights\" (e.g., {\"flights\":[...]}). Never return a raw array."
+    )
+
     with NovaAct(starting_page=starting_page) as nova:
-        result = nova.act_get(
-            prompt,
-            schema=ExtractedFlights.model_json_schema(),
-            max_steps=max_steps,
-            timeout=timeout_seconds,
-        )
-        extracted = ExtractedFlights.model_validate(result.parsed_response)
+        extracted: ExtractedFlights | None = None
+        last_error: Exception | None = None
+
+        for candidate_prompt in (prompt, prompt_retry):
+            try:
+                result = nova.act_get(
+                    candidate_prompt,
+                    schema=ExtractedFlights.model_json_schema(),
+                    max_steps=max_steps,
+                    timeout=timeout_seconds,
+                )
+                extracted = ExtractedFlights.model_validate(result.parsed_response)
+                break
+            except Exception as exc:  # pragma: no cover - depends on provider behavior
+                last_error = exc
+                extracted = None
+
+        if extracted is None:
+            detail = (
+                "Nova Act could not produce schema-valid results. "
+                "This can happen when the model returns a raw array instead of "
+                "the required {\"flights\": [...]} object."
+            )
+            if last_error is not None:
+                detail = f"{detail} Last error: {last_error}"
+            raise HTTPException(status_code=502, detail=detail)
 
     mapped: list[FlightOption] = []
     for idx, item in enumerate(extracted.flights, start=1):

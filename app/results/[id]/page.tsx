@@ -6,7 +6,6 @@ import { useRedirectState } from "@/app/providers/redirect-provider";
 import { Icon } from "@/components/ui/icon";
 import { FlightTimeline } from "@/components/flight-timeline";
 import { PriceBreakdown } from "@/components/price-breakdown";
-import { AmenitiesCard } from "@/components/amenities-card";
 
 export default function FlightDetailsPage() {
   const router = useRouter();
@@ -22,120 +21,98 @@ export default function FlightDetailsPage() {
   }
 
   return (
-    <main className="mx-auto flex flex-col max-w-[1200px] w-full flex-1 py-8 px-6 lg:px-10">
-      <nav className="flex items-center gap-2 mb-6 text-sm text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-primary transition-colors">
-          Home
-        </Link>
-        <Icon name="chevron_right" size={14} />
-        <Link href="/results" className="hover:text-primary transition-colors">
+    <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-6 py-8 lg:px-10">
+      <nav className="mb-5 flex items-center gap-2 text-sm text-slate-500">
+        <Link href="/results" className="hover:text-primary">
           Search Results
         </Link>
         <Icon name="chevron_right" size={14} />
-        <span className="text-slate-900 dark:text-slate-100 font-medium">Flight Details</span>
+        <span className="font-semibold text-slate-900">Flight Details</span>
       </nav>
 
-      <div className="flex flex-col gap-1 mb-8">
-        <h1 className="text-slate-900 dark:text-slate-100 text-3xl font-bold leading-tight tracking-tight">
+      <div className="mb-8">
+        <h1 className="text-4xl font-black tracking-[-0.03em] text-slate-900 md:text-[36px]">
           Flight Journey Details
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Review your itinerary in detail and add any preferences before booking.
+        <p className="mt-2 text-lg text-slate-600">
+          Review your selected itinerary and price breakdown before proceeding.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="flex flex-col sm:flex-row gap-6 items-start">
-              <div className="size-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                <Icon name="flight" size={48} className="text-primary" />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+        <section className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex gap-6">
+              <div className="flex size-24 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                <Icon name="flight" size={44} className="text-primary" />
               </div>
-              <div className="flex flex-col flex-1">
-                <h3 className="text-slate-900 dark:text-slate-100 text-xl font-bold mb-2">
-                  {flight.airline} {flight.airlineCode}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
-                  Departure: {flight.departureAirport} &gt; {flight.arrivalAirport}
-                </p>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-                  {flight.departureTime
-                    ? new Date(flight.departureTime).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "—"}{" "}
-                  • 1 Passenger
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  >
-                    Re-booking Policies
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  >
-                    Aircraft Details
-                  </button>
+              <div className="flex-1">
+                <div className="mb-2 flex items-center gap-2">
+                  <h3 className="text-3xl font-bold tracking-[-0.02em] text-slate-900 md:text-[34px]">
+                    {flight.airline} {flight.airlineCode}
+                  </h3>
+                  <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold uppercase tracking-[0.05em] text-green-700">
+                    Available
+                  </span>
+                </div>
+                <p className="text-base text-slate-600">{flight.aircraftType ?? "Economy Class"}</p>
+                <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary">
+                  <Icon name="verified" size={14} />
+                  Booking Source: Direct with {flight.airline}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h4 className="text-slate-900 dark:text-slate-100 text-lg font-bold mb-6">
-              Flight Schedule
-            </h4>
+          <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+            <h4 className="mb-6 text-2xl font-bold tracking-[-0.02em] text-slate-900">Flight Timeline</h4>
             <FlightTimeline flight={flight} />
           </div>
-        </div>
+        </section>
 
-        <div className="flex flex-col gap-6">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h4 className="text-slate-900 dark:text-slate-100 text-lg font-bold mb-4">
-              Fare Breakdown
-            </h4>
+        <aside className="space-y-6">
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h4 className="mb-4 text-2xl font-bold tracking-[-0.02em] text-slate-900">Price Breakdown</h4>
             <PriceBreakdown priceCents={flight.priceCents} />
+
             {flight.deepLink ? (
               <a
                 href={flight.deepLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-primary text-white font-bold py-4 rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-4"
+                className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-lg bg-primary px-5 py-4 text-center text-lg font-bold text-white shadow-[0px_10px_15px_-3px_rgba(31,58,96,0.2)] hover:bg-primary/90"
               >
-                Confirm &amp; Book Now
+                Continue booking on airline site
+                <Icon name="open_in_new" size={14} />
               </a>
             ) : (
               <button
                 type="button"
                 disabled
-                className="w-full bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-4 cursor-not-allowed"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-slate-200 px-5 py-4 text-sm font-bold text-slate-500"
               >
-                Booking Link Unavailable
+                Booking link unavailable
               </button>
             )}
+
             <Link
               href="/results"
-              className="w-full text-center text-slate-500 hover:text-primary font-medium text-sm transition-colors py-3 block"
+              className="mt-4 block text-center text-sm font-medium text-slate-500 hover:text-primary"
             >
               Back to options
             </Link>
-            <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+
+            <div className="mt-6 border-t border-slate-100 pt-6 text-sm text-slate-500">
               <div className="flex items-start gap-3">
-                <Icon name="info" className="text-slate-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  You will be redirected to the airline&apos;s official site to complete payment.
-                  Your flight details are already synced for a faster checkout.
+                <Icon name="info" size={16} className="mt-0.5 text-slate-400" />
+                <p>
+                  You will be redirected to the airline&apos;s official site to complete payment. Your
+                  flight details are already synced for a faster checkout.
                 </p>
               </div>
             </div>
-          </div>
-
-          <AmenitiesCard />
-        </div>
+          </section>
+        </aside>
       </div>
     </main>
   );
