@@ -39,34 +39,146 @@ function normalizeAirlineName(name: string): string {
     .trim();
 }
 
+function normalizeAirportCode(code: string): string {
+  return code.trim().toUpperCase();
+}
+
+function buildQueryUrl(base: string, params: Record<string, string | number>): string {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    query.set(key, String(value));
+  });
+  return `${base}?${query.toString()}`;
+}
+
+interface AirlineBookingRule {
+  pattern: RegExp;
+  searchPageUrl: string;
+  prefilledUrl?: (trip: TripDetails) => string;
+}
+
 function buildAirlineBookingUrl(airline: string, trip: TripDetails): string | null {
   const normalized = normalizeAirlineName(airline);
-  const from = encodeURIComponent(trip.origin);
-  const to = encodeURIComponent(trip.destination);
-  const date = encodeURIComponent(trip.date);
+  const origin = normalizeAirportCode(trip.origin);
+  const destination = normalizeAirportCode(trip.destination);
+  const date = trip.date;
+  const passengers = Math.max(1, trip.passengers);
 
-  const rules: Array<{ pattern: RegExp; url: string }> = [
-    { pattern: /\bdelta\b/, url: `https://www.delta.com/flight-search/book-a-flight?origin=${from}&destination=${to}&startDate=${date}` },
-    { pattern: /\bunited\b/, url: `https://www.united.com/en/us/fsr/choose-flights?f=${from}&t=${to}&d=${date}` },
-    { pattern: /\bamerican\b|aa\b/, url: `https://www.aa.com/booking/find-flights?from=${from}&to=${to}&departureDate=${date}` },
-    { pattern: /\bsouthwest\b/, url: `https://www.southwest.com/air/booking/select.html?originationAirportCode=${from}&destinationAirportCode=${to}&departureDate=${date}` },
-    { pattern: /\bjetblue\b/, url: `https://www.jetblue.com/booking?from=${from}&to=${to}&depart=${date}` },
-    { pattern: /\balaska\b/, url: `https://www.alaskaair.com/booking/flights?from=${from}&to=${to}&departureDate=${date}` },
-    { pattern: /\bspirit\b/, url: `https://www.spirit.com/book?from=${from}&to=${to}&departureDate=${date}` },
-    { pattern: /\bfrontier\b/, url: `https://booking.flyfrontier.com/Flight/InternalSelect?o1=${from}&d1=${to}&dd1=${date}` },
-    { pattern: /\bbritish airways\b|\bba\b/, url: `https://www.britishairways.com/travel/home/public/en_us` },
-    { pattern: /\blufthansa\b/, url: `https://www.lufthansa.com/us/en/homepage` },
-    { pattern: /\bair france\b/, url: `https://wwws.airfrance.us/search/flights` },
-    { pattern: /\bklm\b/, url: `https://www.klm.com/home/us/en` },
-    { pattern: /\bemirates\b/, url: `https://www.emirates.com/us/english/book/` },
-    { pattern: /\bqatar\b/, url: `https://www.qatarairways.com/en-us/book.html` },
-    { pattern: /\bair canada\b/, url: `https://www.aircanada.com/home/us/en/aco/flights` },
+  const rules: AirlineBookingRule[] = [
+    {
+      pattern: /\bdelta\b/,
+      searchPageUrl: "https://www.delta.com/flight-search/book-a-flight",
+      prefilledUrl: (details) =>
+        buildQueryUrl("https://www.delta.com/flight-search/book-a-flight", {
+          origin: normalizeAirportCode(details.origin),
+          destination: normalizeAirportCode(details.destination),
+          startDate: details.date,
+          passengers: Math.max(1, details.passengers),
+        }),
+    },
+    {
+      pattern: /\bunited\b/,
+      searchPageUrl: "https://www.united.com/en/us/book-flight/united-reservations",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.united.com/en/us/book-flight/united-reservations", {
+          f: origin,
+          t: destination,
+          d: date,
+          px: passengers,
+          tt: "1",
+        }),
+    },
+    {
+      pattern: /\bamerican\b|\bamerican airlines\b/,
+      searchPageUrl: "https://www.aa.com/booking/find-flights",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.aa.com/booking/find-flights", {
+          from: origin,
+          to: destination,
+          departureDate: date,
+          adults: passengers,
+          type: "ONE_WAY",
+        }),
+    },
+    {
+      pattern: /\bsouthwest\b/,
+      searchPageUrl: "https://www.southwest.com/air/booking/select.html",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.southwest.com/air/booking/select.html", {
+          originationAirportCode: origin,
+          destinationAirportCode: destination,
+          departureDate: date,
+          passengerType: "ADULT",
+          int: "HOMEQBOMAIR",
+        }),
+    },
+    {
+      pattern: /\bjetblue\b/,
+      searchPageUrl: "https://www.jetblue.com/booking/flights",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.jetblue.com/booking/flights", {
+          from: origin,
+          to: destination,
+          depart: date,
+          travelers: passengers,
+        }),
+    },
+    {
+      pattern: /\balaska\b/,
+      // Reliability-first path that loaded consistently in testing.
+      // We still pass best-effort search params on this stable URL.
+      searchPageUrl: "https://www.alaskaair.com/en/",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.alaskaair.com/en/", {
+          from: origin,
+          to: destination,
+          departureDate: date,
+          adults: passengers,
+        }),
+    },
+    {
+      pattern: /\bspirit\b/,
+      searchPageUrl: "https://www.spirit.com/book",
+      prefilledUrl: () =>
+        buildQueryUrl("https://www.spirit.com/book", {
+          from: origin,
+          to: destination,
+          departureDate: date,
+          passengers,
+        }),
+    },
+    {
+      pattern: /\bfrontier\b/,
+      searchPageUrl: "https://booking.flyfrontier.com/Flight/InternalSelect",
+      prefilledUrl: () =>
+        buildQueryUrl("https://booking.flyfrontier.com/Flight/InternalSelect", {
+          o1: origin,
+          d1: destination,
+          dd1: date,
+          p: passengers,
+          adt: passengers,
+        }),
+    },
+    { pattern: /\bhawaiian\b/, searchPageUrl: "https://www.hawaiianairlines.com/book" },
+    { pattern: /\bsun country\b|\bsuncountry\b/, searchPageUrl: "https://www.suncountry.com/book/flights" },
+    { pattern: /\ballegiant\b/, searchPageUrl: "https://www.allegiantair.com/" },
+    { pattern: /\bair canada\b/, searchPageUrl: "https://www.aircanada.com/us/en/aco/home/book/flights.html" },
+    { pattern: /\bbritish airways\b|\bba\b/, searchPageUrl: "https://www.britishairways.com/travel/book/public/en_us" },
+    { pattern: /\blufthansa\b/, searchPageUrl: "https://www.lufthansa.com/us/en/book" },
+    { pattern: /\bair france\b/, searchPageUrl: "https://wwws.airfrance.us/search/flights" },
+    { pattern: /\bklm\b/, searchPageUrl: "https://www.klm.com/home/us/en/booking" },
+    { pattern: /\bemirates\b/, searchPageUrl: "https://www.emirates.com/us/english/book/" },
+    { pattern: /\bqatar\b/, searchPageUrl: "https://www.qatarairways.com/en-us/book.html" },
+    { pattern: /\bsingapore airlines\b/, searchPageUrl: "https://www.singaporeair.com/en_UK/us/plan-travel/book-flights/" },
+    { pattern: /\betihad\b/, searchPageUrl: "https://www.etihad.com/en-us/book" },
+    { pattern: /\bturkish\b/, searchPageUrl: "https://www.turkishairlines.com/en-us/flights/booking/" },
+    { pattern: /\bvirgin atlantic\b/, searchPageUrl: "https://flights.virginatlantic.com/en-us/flights" },
   ];
 
   const match = rules.find((rule) => rule.pattern.test(normalized));
-  if (match) return match.url;
-
-  return null;
+  if (!match) return null;
+  if (match.prefilledUrl) return match.prefilledUrl(trip);
+  return match.searchPageUrl;
 }
 
 function buildOtaFallbackUrl(trip: TripDetails): string {
@@ -80,12 +192,15 @@ function buildOtaFallbackUrl(trip: TripDetails): string {
 
 function enrichBookingLinks(options: FlightOption[], trip: TripDetails): FlightOption[] {
   return options.map((option) => {
-    if (option.deepLink && /^https?:\/\//i.test(option.deepLink)) {
+    const trimmedDeepLink = option.deepLink?.trim();
+    if (trimmedDeepLink && /^https?:\/\//i.test(trimmedDeepLink)) {
       return option;
     }
 
     const airlineUrl = buildAirlineBookingUrl(option.airline, trip);
-    if (option.bookingSource === "airline" && airlineUrl) {
+    // Prefer airline search pages whenever we can map the carrier,
+    // regardless of the original source classification.
+    if (airlineUrl) {
       return { ...option, deepLink: airlineUrl };
     }
 
@@ -93,14 +208,10 @@ function enrichBookingLinks(options: FlightOption[], trip: TripDetails): FlightO
       return { ...option, deepLink: buildOtaFallbackUrl(trip) };
     }
 
-    if (airlineUrl) {
-      return { ...option, deepLink: airlineUrl };
-    }
-
-    const officialSiteSearch = `https://www.google.com/search?q=${encodeURIComponent(
-      `${option.airline} official booking site`,
+    const airlineSearchFallback = `https://www.google.com/search?q=${encodeURIComponent(
+      `${option.airline} official flight search`,
     )}`;
-    return { ...option, deepLink: officialSiteSearch };
+    return { ...option, deepLink: airlineSearchFallback };
   });
 }
 

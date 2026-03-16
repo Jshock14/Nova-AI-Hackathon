@@ -114,5 +114,9 @@ curl -i -X POST http://localhost:8000/search \
 
 ## Notes
 
-- `deepLink` may be `null` when the source site does not expose a direct booking link in visible results.
+- Booking link resolution order in the Next.js app:
+  1. Use valid source `deepLink` when provided by the search service.
+  2. Otherwise, map to airline-specific booking/search URLs (with query prefill where supported).
+  3. If the carrier cannot be mapped and `bookingSource` is `ota`, fall back to Expedia search URL prefilled with trip details.
+  4. Final fallback is a carrier-targeted search query (`<airline> official flight search`).
 - Search run state is currently in-memory for MVP development.

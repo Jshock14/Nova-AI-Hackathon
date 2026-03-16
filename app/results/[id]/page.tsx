@@ -106,8 +106,8 @@ export default function FlightDetailsPage() {
               <div className="flex items-start gap-3">
                 <Icon name="info" size={16} className="mt-0.5 text-slate-400" />
                 <p>
-                  You will be redirected to the airline&apos;s official site to complete payment. Your
-                  flight details are already synced for a faster checkout.
+                  You&apos;ll be redirected to the airline&apos;s official flight search to complete booking.
+                  Route and date are pre-filled whenever the airline supports deep-link parameters.
                 </p>
               </div>
             </div>
